@@ -4,6 +4,9 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  // Pure client-side app (camera/canvas/PWA only make sense in-browser) —
+  // build as an SPA so `nuxt generate` doesn't try to server-render/prerender it.
+  ssr: false,
   modules: ['@pinia/nuxt', '@vite-pwa/nuxt'],
   css: ['~/assets/css/main.css'],
   vite: {
