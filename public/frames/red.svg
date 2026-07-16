@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="3600" viewBox="0 0 1200 3600">
+  <path fill-rule="evenodd" fill="#c1443a" d="
+    M0,0 H1200 V3600 H0 Z
+    M60,60 H1140 V825 H60 Z
+    M60,865 H1140 V1630 H60 Z
+    M60,1670 H1140 V2435 H60 Z
+    M60,2475 H1140 V3240 H60 Z
+  "/>
+  <text x="600" y="3450" text-anchor="middle" font-family="monospace" font-size="48" fill="#f2e9d8">POCKET BOOTH · made by Thirde ♥</text>
+</svg>

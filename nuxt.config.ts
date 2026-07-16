@@ -1,5 +1,30 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import tailwindcss from '@tailwindcss/vite'
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true }
+  devtools: { enabled: true },
+  modules: ['@pinia/nuxt', '@vite-pwa/nuxt'],
+  css: ['~/assets/css/main.css'],
+  vite: {
+    plugins: [tailwindcss()]
+  },
+  pwa: {
+    registerType: 'autoUpdate',
+    manifest: {
+      name: 'Pocket Booth',
+      short_name: 'Pocket Booth',
+      description: 'Four shots, one strip, for the two of us.',
+      theme_color: '#2f7a71',
+      background_color: '#f2e9d8',
+      display: 'standalone',
+      icons: [
+        { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' }
+      ]
+    },
+    workbox: {
+      globPatterns: ['**/*.{js,css,html,svg,png,ico}']
+    }
+  }
 })
