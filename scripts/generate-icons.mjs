@@ -45,10 +45,19 @@ function inRoundedRect(x, y, rx, ry, rw, rh, radius) {
 // Icon: teal background, a cream photo-strip shape (with 3 dividers, like
 // the app's 4-shot strip) and a small yellow sparkle accent — matches the
 // app's own palette/motifs instead of a flat placeholder square.
-function pixelColor(x, y, size) {
+//
+// `contentScale` shrinks the strip+star toward the center (background stays
+// full-bleed) for Android's maskable icons: launchers crop the icon into a
+// circle/squircle/rounded-square, so foreground content needs to stay
+// within a safe zone (~80% of the icon) or it gets clipped.
+function pixelColor(x, y, size, contentScale = 1) {
   const TEAL = [47, 122, 113]
   const CREAM = [242, 233, 216]
   const YELLOW = [224, 167, 46]
+
+  const center = size / 2
+  x = center + (x - center) / contentScale
+  y = center + (y - center) / contentScale
 
   const sw = size * 0.42
   const sh = size * 0.74
@@ -73,7 +82,7 @@ function pixelColor(x, y, size) {
   return TEAL
 }
 
-function makeIconPng(size) {
+function makeIconPng(size, contentScale = 1) {
   const ihdr = Buffer.alloc(13)
   ihdr.writeUInt32BE(size, 0)
   ihdr.writeUInt32BE(size, 4)
@@ -86,7 +95,7 @@ function makeIconPng(size) {
     const rowStart = y * rowLen
     raw[rowStart] = 0 // filter type: none
     for (let x = 0; x < size; x++) {
-      const [r, g, b] = pixelColor(x, y, size)
+      const [r, g, b] = pixelColor(x, y, size, contentScale)
       const px = rowStart + 1 + x * 3
       raw[px] = r
       raw[px + 1] = g
@@ -101,4 +110,7 @@ function makeIconPng(size) {
 mkdirSync('public/icons', { recursive: true })
 writeFileSync('public/icons/icon-192.png', makeIconPng(192))
 writeFileSync('public/icons/icon-512.png', makeIconPng(512))
-console.log('Generated public/icons/icon-192.png and icon-512.png')
+// Maskable variant: content scaled to ~70% and centered, so Android's
+// circle/squircle/rounded-square crop doesn't clip the strip or star.
+writeFileSync('public/icons/icon-maskable-512.png', makeIconPng(512, 0.7))
+console.log('Generated public/icons/icon-192.png, icon-512.png, and icon-maskable-512.png')
