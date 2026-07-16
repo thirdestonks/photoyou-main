@@ -25,6 +25,15 @@ const stars: Star[] = [
   { position: '-bottom-4 left-8', size: 'text-xl', delay: 1.0 }
 ]
 
+const thanksStars: Star[] = [
+  { position: '-top-4 -left-4', size: 'text-2xl', delay: 0.1 },
+  { position: '-top-5 right-2', size: 'text-xl', delay: 0.2 },
+  { position: 'top-1/3 -right-6', size: 'text-lg', delay: 0.3 },
+  { position: 'bottom-1/3 -left-6', size: 'text-lg', delay: 0.25 },
+  { position: '-bottom-4 right-8', size: 'text-2xl', delay: 0.35 },
+  { position: '-bottom-5 left-10', size: 'text-xl', delay: 0.15 }
+]
+
 function starStyle(delay: number) {
   return { animationDelay: `${delay}s, ${delay + 0.6}s` }
 }
@@ -171,10 +180,26 @@ async function sendFeedback() {
             hmmmm? di ata nagsend. try mo ulit.
           </p>
         </template>
-        <p v-else class="font-mono text-sm text-booth-teal">
-          salamat bitch.
-        </p>
       </div>
     </div>
+
+    <Transition name="pop">
+      <div
+        v-if="feedbackStatus === 'sent'"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-booth-ink/50 p-6"
+        @click="feedbackOpen = false"
+      >
+        <div class="relative rounded-2xl bg-booth-red px-10 py-8 shadow-xl">
+          <span
+            v-for="(star, i) in thanksStars"
+            :key="i"
+            class="pointer-events-none absolute animate-[star-pop_0.5s_ease-out_forwards,twinkle_1.6s_ease-in-out_infinite] text-booth-yellow opacity-0"
+            :class="[star.position, star.size]"
+            :style="starStyle(star.delay)"
+          >✦</span>
+          <p class="font-mono text-2xl font-bold text-booth-yellow">salamat bitch.</p>
+        </div>
+      </div>
+    </Transition>
   </section>
 </template>
