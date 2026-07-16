@@ -41,9 +41,9 @@ async function runAutoSequence() {
   if (isRunningAuto.value) return
   isRunningAuto.value = true
   while (booth.photos.length < 4) {
-    for (let n = 3; n > 0; n--) {
+    for (let n = 10; n > 0; n--) {
       countdown.value = n
-      await delay(600)
+      await delay(1000)
     }
     countdown.value = null
     takeShot()

@@ -9,6 +9,14 @@ export default defineNuxtConfig({
   ssr: false,
   modules: ['@pinia/nuxt', '@vite-pwa/nuxt'],
   css: ['~/assets/css/main.css'],
+  runtimeConfig: {
+    public: {
+      // Overridable via NUXT_PUBLIC_FEEDBACK_ENDPOINT env var at build/deploy
+      // time. Not a secret — Formspree form endpoints are meant to be used
+      // client-side — this just avoids hardcoding it in component source.
+      feedbackEndpoint: 'https://formspree.io/f/mblapwgy'
+    }
+  },
   vite: {
     plugins: [tailwindcss()]
   },

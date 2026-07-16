@@ -65,6 +65,27 @@ async function shareStrip() {
 function retake() {
   booth.retake()
 }
+
+const { public: { feedbackEndpoint } } = useRuntimeConfig()
+const feedbackOpen = ref(false)
+const feedbackText = ref('')
+const feedbackStatus = ref<'idle' | 'sending' | 'sent' | 'error'>('idle')
+
+async function sendFeedback() {
+  if (!feedbackText.value.trim()) return
+  feedbackStatus.value = 'sending'
+  try {
+    const response = await fetch(feedbackEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ message: feedbackText.value })
+    })
+    if (!response.ok) throw new Error('Feedback request failed')
+    feedbackStatus.value = 'sent'
+  } catch {
+    feedbackStatus.value = 'error'
+  }
+}
 </script>
 
 <template>
@@ -111,6 +132,40 @@ function retake() {
       >
         ↗ SHARE
       </button>
+    </div>
+
+    <div class="w-full max-w-[320px]">
+      <button
+        v-if="!feedbackOpen"
+        class="font-mono text-sm text-booth-teal underline"
+        @click="feedbackOpen = true"
+      >
+        💬 Got feedback? Tell me!
+      </button>
+
+      <div v-else class="flex flex-col gap-2 text-left">
+        <template v-if="feedbackStatus !== 'sent'">
+          <textarea
+            v-model="feedbackText"
+            rows="3"
+            placeholder="loved it, hated it, found something weird — tell me!"
+            class="w-full rounded-lg border border-booth-ink p-2 font-mono text-sm"
+          />
+          <button
+            class="rounded-xl bg-booth-teal py-2 font-bold text-white transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-95 disabled:opacity-50"
+            :disabled="!feedbackText.trim() || feedbackStatus === 'sending'"
+            @click="sendFeedback"
+          >
+            {{ feedbackStatus === 'sending' ? 'sending...' : 'send feedback ♥' }}
+          </button>
+          <p v-if="feedbackStatus === 'error'" class="font-mono text-xs text-booth-red">
+            hmm, that didn't send — mind trying again?
+          </p>
+        </template>
+        <p v-else class="font-mono text-sm text-booth-teal">
+          thanks so much! 💌 got your feedback.
+        </p>
+      </div>
     </div>
   </section>
 </template>
