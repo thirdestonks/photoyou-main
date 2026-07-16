@@ -39,13 +39,34 @@ export function useCamera(): UseCameraResult {
     isReady.value = false
   }
 
+  // Matches the viewfinder's `aspect-[3/4]` container (CaptureScreen.vue) so
+  // the captured photo is a WYSIWYG match for what was actually posed for in
+  // the live preview, instead of the camera's full raw, uncropped frame.
+  const CAPTURE_ASPECT = 3 / 4
+
   function captureFrame(cssFilter: string): string | null {
     const video = videoRef.value
     if (!video || !isReady.value) return null
 
+    // Crop the raw video frame to CAPTURE_ASPECT (centered), the same way
+    // the CSS `object-cover` viewfinder crops what's shown live — otherwise
+    // the saved photo includes far more of the room than the user saw.
+    const videoRatio = video.videoWidth / video.videoHeight
+    let sx = 0
+    let sy = 0
+    let sw = video.videoWidth
+    let sh = video.videoHeight
+    if (videoRatio > CAPTURE_ASPECT) {
+      sw = video.videoHeight * CAPTURE_ASPECT
+      sx = (video.videoWidth - sw) / 2
+    } else {
+      sh = video.videoWidth / CAPTURE_ASPECT
+      sy = (video.videoHeight - sh) / 2
+    }
+
     const canvas = document.createElement('canvas')
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
+    canvas.width = sw
+    canvas.height = sh
     const ctx = canvas.getContext('2d')
     if (!ctx) return null
 
@@ -54,7 +75,7 @@ export function useCamera(): UseCameraResult {
     // (selfie-style, like looking in a mirror) rather than the raw camera feed.
     ctx.translate(canvas.width, 0)
     ctx.scale(-1, 1)
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height)
     return canvas.toDataURL('image/png')
   }
 
