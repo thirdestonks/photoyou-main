@@ -23,7 +23,7 @@ function openIn(androidPackage: string) {
     class="flex min-h-screen flex-col items-center justify-center gap-6 bg-booth-cream p-8 text-center"
   >
     <p class="text-3xl">🚫</p>
-    <h1 class="text-2xl font-extrabold leading-tight text-booth-red">Hala, sa Messenger/Instagram ka pa lang!</h1>
+    <h1 class="text-2xl font-extrabold leading-tight text-booth-red">Fucc, sa Messenger/Instagram ka pala naka open!</h1>
     <p class="max-w-[320px] font-mono text-sm text-gray-600">
       Kailangan ng camera access na hindi pwede dito. Open muna sa Chrome or Brave para makapag-picture tayo.
     </p>
