@@ -3,10 +3,12 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useBoothStore } from '~/stores/booth'
 import { resolveFrameSrc } from '~/utils/frames'
 import { compositeStrip } from '~/utils/compositeStrip'
+import { isInAppBrowser } from '~/utils/inAppBrowser'
 
 const booth = useBoothStore()
 const stripUrl = ref<string | null>(null)
 let stripBlob: Blob | null = null
+const showOpenInBrowserHint = ref(false)
 
 interface Star {
   position: string
@@ -28,6 +30,7 @@ function starStyle(delay: number) {
 }
 
 onMounted(async () => {
+  showOpenInBrowserHint.value = isInAppBrowser()
   const frameSrc = resolveFrameSrc(booth.selectedFrameId, booth.customFrameDataUrl)
   stripBlob = await compositeStrip(booth.photos, frameSrc)
   stripUrl.value = URL.createObjectURL(stripBlob)
@@ -96,7 +99,7 @@ async function sendFeedback() {
     <div class="relative max-w-[260px]">
       <div v-if="!stripUrl" class="flex w-full flex-col gap-2 rounded-lg bg-white p-3">
         <div v-for="n in 4" :key="n" class="aspect-4/3 animate-pulse rounded-md bg-booth-ink/10" />
-        <p class="pt-1 font-mono text-xs text-gray-500">printing your strip... hang tight ♥</p>
+        <p class="pt-1 font-mono text-xs text-gray-500">piniprint pa... wait lang</p>
       </div>
       <Transition name="reveal" appear>
         <img v-if="stripUrl" :src="stripUrl" alt="Your photo strip" class="w-full rounded-lg" />
@@ -111,6 +114,12 @@ async function sendFeedback() {
         >✦</span>
       </template>
     </div>
+    <p
+      v-if="showOpenInBrowserHint"
+      class="w-full max-w-[320px] rounded-lg bg-booth-yellow/20 p-3 font-mono text-xs text-booth-ink"
+    >
+      ⚠️ Naka-open ka sa Messenger/Instagram nohh?, di gagana download dito. Tap mo ⋯ o ⋮ menu sa taas and choose "Open in Browser" (Safari/Chrome) para ma-download. Pasensya waley pa kong update ditey.
+    </p>
     <button
       class="w-full max-w-[320px] rounded-xl bg-booth-red py-4 font-bold text-white transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-95 disabled:opacity-50"
       :disabled="!stripUrl"
@@ -140,7 +149,7 @@ async function sendFeedback() {
         class="font-mono text-sm text-booth-teal underline"
         @click="feedbackOpen = true"
       >
-        💬 Got feedback? Tell me!
+        💬 May mali ba sa app ko? sabihin mo na oh!
       </button>
 
       <div v-else class="flex flex-col gap-2 text-left">
@@ -159,11 +168,11 @@ async function sendFeedback() {
             {{ feedbackStatus === 'sending' ? 'sending...' : 'send feedback ♥' }}
           </button>
           <p v-if="feedbackStatus === 'error'" class="font-mono text-xs text-booth-red">
-            hmm, that didn't send — mind trying again?
+            hmmmm? di ata nagsend. try mo ulit.
           </p>
         </template>
         <p v-else class="font-mono text-sm text-booth-teal">
-          thanks so much! 💌 got your feedback.
+          salamat bitch.
         </p>
       </div>
     </div>
