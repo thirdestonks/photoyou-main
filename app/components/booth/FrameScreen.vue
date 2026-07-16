@@ -7,15 +7,21 @@ import { readFileAsDataUrl } from '~/utils/dataUrl'
 
 const booth = useBoothStore()
 const previewUrl = ref<string | null>(null)
+const isLoadingPreview = ref(false)
 let lastObjectUrl: string | null = null
 
 async function refreshPreview() {
   if (booth.photos.length < 4) return
-  const frameSrc = resolveFrameSrc(booth.selectedFrameId, booth.customFrameDataUrl)
-  const blob = await compositeStrip(booth.photos, frameSrc)
-  if (lastObjectUrl) URL.revokeObjectURL(lastObjectUrl)
-  lastObjectUrl = URL.createObjectURL(blob)
-  previewUrl.value = lastObjectUrl
+  isLoadingPreview.value = true
+  try {
+    const frameSrc = resolveFrameSrc(booth.selectedFrameId, booth.customFrameDataUrl)
+    const blob = await compositeStrip(booth.photos, frameSrc)
+    if (lastObjectUrl) URL.revokeObjectURL(lastObjectUrl)
+    lastObjectUrl = URL.createObjectURL(blob)
+    previewUrl.value = lastObjectUrl
+  } finally {
+    isLoadingPreview.value = false
+  }
 }
 
 watch(
@@ -44,10 +50,23 @@ function useThisFrame() {
   <section class="flex min-h-screen flex-col gap-4 bg-booth-cream p-6">
     <h2 class="text-xl font-bold">Choose a frame</h2>
     <div class="flex gap-4">
-      <div class="flex-1 overflow-hidden rounded-lg border-2 border-booth-ink bg-white">
+      <div class="relative flex-1 overflow-hidden rounded-lg border-2 border-booth-ink bg-white">
+        <!-- First-load skeleton: no preview yet at all -->
+        <div v-if="!previewUrl" class="flex flex-col gap-2 p-2">
+          <div v-for="n in 4" :key="n" class="aspect-4/3 animate-pulse rounded-md bg-booth-ink/10" />
+          <p class="pt-1 text-center font-mono text-xs text-gray-500">loading your frame...</p>
+        </div>
         <Transition name="fade" mode="out-in">
           <img v-if="previewUrl" :key="previewUrl" :src="previewUrl" alt="Strip preview" class="block w-full" />
         </Transition>
+        <!-- Switching frames: dim the current preview instead of hiding it -->
+        <div
+          v-if="previewUrl && isLoadingPreview"
+          class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/70"
+        >
+          <div class="h-6 w-6 animate-spin rounded-full border-4 border-booth-ink/20 border-t-booth-red" />
+          <p class="font-mono text-xs text-gray-600">loading your frame...</p>
+        </div>
       </div>
       <div class="flex flex-1 flex-col gap-2">
         <p class="font-mono text-xs text-gray-500">PRESETS</p>

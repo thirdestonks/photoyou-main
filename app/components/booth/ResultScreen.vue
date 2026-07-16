@@ -69,13 +69,13 @@ function retake() {
 
 <template>
   <section class="flex min-h-screen flex-col items-center gap-6 bg-booth-cream p-6 text-center">
-    <h2 class="text-xl font-bold text-booth-red">Your strip is ready ♥</h2>
+    <h2 class="text-xl font-bold text-booth-red">
+      {{ stripUrl ? 'Your strip is ready ♥' : 'Printing your strip...' }}
+    </h2>
     <div class="relative max-w-[260px]">
-      <div
-        v-if="!stripUrl"
-        class="flex aspect-1/3 w-full items-center justify-center rounded-lg bg-white"
-      >
-        <div class="h-10 w-10 animate-spin rounded-full border-4 border-booth-ink/20 border-t-booth-red" />
+      <div v-if="!stripUrl" class="flex w-full flex-col gap-2 rounded-lg bg-white p-3">
+        <div v-for="n in 4" :key="n" class="aspect-4/3 animate-pulse rounded-md bg-booth-ink/10" />
+        <p class="pt-1 font-mono text-xs text-gray-500">printing your strip... hang tight ♥</p>
       </div>
       <Transition name="reveal" appear>
         <img v-if="stripUrl" :src="stripUrl" alt="Your photo strip" class="w-full rounded-lg" />
