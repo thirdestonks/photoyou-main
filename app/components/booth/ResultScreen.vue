@@ -45,8 +45,11 @@ onMounted(async () => {
   stripUrl.value = URL.createObjectURL(stripBlob)
 })
 
+let thanksInterval: ReturnType<typeof setInterval> | undefined
+
 onBeforeUnmount(() => {
   if (stripUrl.value) URL.revokeObjectURL(stripUrl.value)
+  clearInterval(thanksInterval)
 })
 
 function downloadStrip() {
@@ -82,6 +85,7 @@ const { public: { feedbackEndpoint } } = useRuntimeConfig()
 const feedbackOpen = ref(false)
 const feedbackText = ref('')
 const feedbackStatus = ref<'idle' | 'sending' | 'sent' | 'error'>('idle')
+const thanksSecondsLeft = ref(2)
 
 async function sendFeedback() {
   if (!feedbackText.value.trim()) return
@@ -94,9 +98,25 @@ async function sendFeedback() {
     })
     if (!response.ok) throw new Error('Feedback request failed')
     feedbackStatus.value = 'sent'
+    thanksSecondsLeft.value = 2
+    clearInterval(thanksInterval)
+    thanksInterval = setInterval(() => {
+      thanksSecondsLeft.value -= 1
+      if (thanksSecondsLeft.value <= 0) {
+        clearInterval(thanksInterval)
+        feedbackOpen.value = false
+        feedbackStatus.value = 'idle'
+        feedbackText.value = ''
+      }
+    }, 1000)
   } catch {
     feedbackStatus.value = 'error'
   }
+}
+
+function dismissThanks() {
+  clearInterval(thanksInterval)
+  feedbackOpen.value = false
 }
 </script>
 
@@ -187,7 +207,7 @@ async function sendFeedback() {
       <div
         v-if="feedbackStatus === 'sent'"
         class="fixed inset-0 z-50 flex items-center justify-center bg-booth-ink/50 p-6"
-        @click="feedbackOpen = false"
+        @click="dismissThanks"
       >
         <div class="relative rounded-2xl bg-booth-red px-10 py-8 shadow-xl">
           <span
@@ -198,6 +218,7 @@ async function sendFeedback() {
             :style="starStyle(star.delay)"
           >✦</span>
           <p class="font-mono text-2xl font-bold text-booth-yellow">salamat bitch.</p>
+          <p class="mt-1 font-mono text-xs text-booth-yellow/70">me close {{ thanksSecondsLeft }}...</p>
         </div>
       </div>
     </Transition>
