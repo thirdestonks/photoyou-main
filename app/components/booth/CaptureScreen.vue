@@ -16,7 +16,9 @@ const isRunningAuto = ref(false)
 const flash = ref(false)
 
 const currentFilter = computed(() => getFilterById(booth.filterId))
-const shotLabel = computed(() => `${String(booth.photos.length + 1).padStart(2, '0')} / 04`)
+const shotLabel = computed(
+  () => `${String(booth.photos.length + 1).padStart(2, '0')} / ${String(booth.shotCount).padStart(2, '0')}`
+)
 
 onMounted(() => {
   startCamera()
@@ -40,8 +42,8 @@ function takeShot() {
 async function runAutoSequence() {
   if (isRunningAuto.value) return
   isRunningAuto.value = true
-  while (booth.photos.length < 4) {
-    for (let n = 10; n > 0; n--) {
+  while (booth.photos.length < booth.shotCount) {
+    for (let n = booth.timerSeconds; n > 0; n--) {
       countdown.value = n
       await delay(1000)
     }
@@ -53,7 +55,7 @@ async function runAutoSequence() {
 }
 
 function onShutter() {
-  if (booth.photos.length >= 4) return
+  if (booth.photos.length >= booth.shotCount) return
   if (booth.mode === 'auto') {
     runAutoSequence()
   } else {
@@ -133,6 +135,17 @@ function onShutter() {
           @click="booth.setMode('manual')"
         >
           MANUAL
+        </button>
+      </div>
+      <div v-if="booth.mode === 'auto'" class="flex overflow-hidden rounded-full border border-booth-ink">
+        <button
+          v-for="s in [3, 5, 10]"
+          :key="s"
+          class="px-3 py-2 font-mono"
+          :class="booth.timerSeconds === s ? 'bg-booth-yellow' : 'bg-white'"
+          @click="booth.setTimerSeconds(s as 3 | 5 | 10)"
+        >
+          {{ s }}s
         </button>
       </div>
       <button

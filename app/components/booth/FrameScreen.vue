@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onBeforeUnmount } from 'vue'
 import { useBoothStore } from '~/stores/booth'
-import { BUILT_IN_FRAMES, resolveFrameSrc } from '~/utils/frames'
+import { BUILT_IN_FRAMES, resolveFrame } from '~/utils/frames'
 import { compositeStrip } from '~/utils/compositeStrip'
 import { readFileAsDataUrl } from '~/utils/dataUrl'
 
@@ -11,11 +11,11 @@ const isLoadingPreview = ref(false)
 let lastObjectUrl: string | null = null
 
 async function refreshPreview() {
-  if (booth.photos.length < 4) return
+  if (booth.photos.length < booth.shotCount) return
   isLoadingPreview.value = true
   try {
-    const frameSrc = resolveFrameSrc(booth.selectedFrameId, booth.customFrameDataUrl)
-    const blob = await compositeStrip(booth.photos, frameSrc)
+    const frame = resolveFrame(booth.selectedFrameId, booth.customFrameDataUrl)
+    const blob = await compositeStrip(booth.photos, frame)
     if (lastObjectUrl) URL.revokeObjectURL(lastObjectUrl)
     lastObjectUrl = URL.createObjectURL(blob)
     previewUrl.value = lastObjectUrl
@@ -53,7 +53,7 @@ function useThisFrame() {
       <div class="relative flex-1 overflow-hidden rounded-lg border-2 border-booth-ink bg-white">
         <!-- First-load skeleton: no preview yet at all -->
         <div v-if="!previewUrl" class="flex flex-col gap-2 p-2">
-          <div v-for="n in 4" :key="n" class="aspect-4/3 animate-pulse rounded-md bg-booth-ink/10" />
+          <div v-for="n in booth.shotCount" :key="n" class="aspect-4/3 animate-pulse rounded-md bg-booth-ink/10" />
           <p class="pt-1 text-center font-mono text-xs text-gray-500">loading your frame...</p>
         </div>
         <Transition name="fade" mode="out-in">

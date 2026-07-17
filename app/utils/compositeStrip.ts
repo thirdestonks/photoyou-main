@@ -1,4 +1,5 @@
-import { STRIP_WIDTH, STRIP_HEIGHT, FRAME_WINDOWS } from './frameContract'
+import { STRIP_WIDTH, computeStripHeight, computeWindows } from './frameContract'
+import type { ResolvedFrame } from './frames'
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -39,30 +40,49 @@ function drawImageCover(
   ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh)
 }
 
-export async function compositeStrip(photos: string[], frameSrc: string): Promise<Blob> {
+const FOOTER_TEXT = 'POCKET BOOTH · made by Thirde ♥'
+const CAPTION_COLOR = '#f2e9d8'
+
+export async function compositeStrip(photos: string[], frame: ResolvedFrame): Promise<Blob> {
+  const count = photos.length
+  const stripHeight = computeStripHeight(count)
+
   const canvas = document.createElement('canvas')
   canvas.width = STRIP_WIDTH
-  canvas.height = STRIP_HEIGHT
+  canvas.height = stripHeight
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Canvas 2D context unavailable')
 
-  ctx.fillStyle = '#f2e9d8'
-  ctx.fillRect(0, 0, STRIP_WIDTH, STRIP_HEIGHT)
-
-  // Frame draws first as a background layer, then photos draw on top at their
-  // fixed windows — the photos act as a stencil over whatever the frame is.
-  // This means built-in frames (authored with transparent window cutouts)
-  // and arbitrary custom uploads (fully opaque, no cutouts) both work: the
-  // photos are always visible, and the frame shows through everywhere else.
-  const frameImage = await loadImage(frameSrc)
-  ctx.drawImage(frameImage, 0, 0, STRIP_WIDTH, STRIP_HEIGHT)
+  // Background layer. Photos draw on top at their windows, so the margins/gaps
+  // filled here form the visible borders (no cutouts needed).
+  if (frame.kind === 'custom') {
+    const frameImage = await loadImage(frame.dataUrl)
+    // Stretch-to-fit the dynamic strip size.
+    ctx.drawImage(frameImage, 0, 0, STRIP_WIDTH, stripHeight)
+  } else {
+    ctx.fillStyle = frame.frame.color
+    ctx.fillRect(0, 0, STRIP_WIDTH, stripHeight)
+    if (frame.frame.decoration) {
+      ctx.fillStyle = CAPTION_COLOR
+      ctx.font = '90px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText(frame.frame.decoration.glyph, 1080, 140)
+    }
+  }
 
   const photoImages = await Promise.all(photos.map(loadImage))
+  const windows = computeWindows(count)
   photoImages.forEach((img, i) => {
-    const win = FRAME_WINDOWS[i]
+    const win = windows[i]
     if (!win) return
     drawImageCover(ctx, img, win.x, win.y, win.width, win.height)
   })
+
+  // Footer caption, anchored to the bottom of the (dynamic) strip.
+  ctx.fillStyle = CAPTION_COLOR
+  ctx.font = '48px monospace'
+  ctx.textAlign = 'center'
+  ctx.fillText(FOOTER_TEXT, STRIP_WIDTH / 2, stripHeight - 150)
 
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {

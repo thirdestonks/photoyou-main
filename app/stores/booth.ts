@@ -4,8 +4,8 @@ import { DEFAULT_FRAME_ID } from '../utils/frames'
 
 export type BoothStep = 'intro' | 'capture' | 'frame' | 'result'
 export type CaptureMode = 'auto' | 'manual'
-
-const MAX_PHOTOS = 4
+export type ShotCount = 2 | 3 | 4
+export type TimerSeconds = 3 | 5 | 10
 
 export interface BoothState {
   step: BoothStep
@@ -14,6 +14,8 @@ export interface BoothState {
   mode: CaptureMode
   selectedFrameId: string
   customFrameDataUrl: string | null
+  shotCount: ShotCount
+  timerSeconds: TimerSeconds
 }
 
 export const useBoothStore = defineStore('booth', {
@@ -23,7 +25,9 @@ export const useBoothStore = defineStore('booth', {
     filterId: FILTERS[0].id,
     mode: 'auto',
     selectedFrameId: DEFAULT_FRAME_ID,
-    customFrameDataUrl: null
+    customFrameDataUrl: null,
+    shotCount: 4,
+    timerSeconds: 5
   }),
   actions: {
     goTo(step: BoothStep) {
@@ -32,13 +36,19 @@ export const useBoothStore = defineStore('booth', {
     setMode(mode: CaptureMode) {
       this.mode = mode
     },
+    setShotCount(shotCount: ShotCount) {
+      this.shotCount = shotCount
+    },
+    setTimerSeconds(timerSeconds: TimerSeconds) {
+      this.timerSeconds = timerSeconds
+    },
     setFilter(filterId: string) {
       this.filterId = filterId
     },
     capturePhoto(dataUrl: string) {
-      if (this.photos.length >= MAX_PHOTOS) return
+      if (this.photos.length >= this.shotCount) return
       this.photos.push(dataUrl)
-      if (this.photos.length >= MAX_PHOTOS) {
+      if (this.photos.length >= this.shotCount) {
         this.step = 'frame'
       }
     },
@@ -60,6 +70,8 @@ export const useBoothStore = defineStore('booth', {
       this.mode = 'auto'
       this.selectedFrameId = DEFAULT_FRAME_ID
       this.customFrameDataUrl = null
+      this.shotCount = 4
+      this.timerSeconds = 5
     }
   }
 })

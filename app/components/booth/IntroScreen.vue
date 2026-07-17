@@ -49,7 +49,18 @@ function openIn(androidPackage: string) {
   <section v-else class="flex min-h-screen flex-col items-center justify-center gap-6 bg-booth-cream p-8 text-center">
     <p class="self-start text-booth-teal">★</p>
     <h1 class="text-5xl font-extrabold leading-tight text-booth-red">SAY CHEESE!</h1>
-    <p class="font-mono text-gray-600">four shots · one strip<br />for the two of us</p>
+    <p class="font-mono text-gray-600">{{ booth.shotCount }} shots · one strip<br />for the two of us</p>
+    <div class="flex overflow-hidden rounded-full border border-booth-ink">
+      <button
+        v-for="n in [2, 3, 4]"
+        :key="n"
+        class="px-5 py-2 font-mono"
+        :class="booth.shotCount === n ? 'bg-booth-yellow' : 'bg-white'"
+        @click="booth.setShotCount(n as 2 | 3 | 4)"
+      >
+        {{ n }}
+      </button>
+    </div>
     <button
       class="rounded-xl bg-booth-teal px-8 py-4 text-lg font-bold text-white transition-transform duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-90"
       @click="booth.goTo('capture')"

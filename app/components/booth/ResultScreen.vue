@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useBoothStore } from '~/stores/booth'
-import { resolveFrameSrc } from '~/utils/frames'
+import { resolveFrame } from '~/utils/frames'
 import { compositeStrip } from '~/utils/compositeStrip'
 import { isInAppBrowser } from '~/utils/inAppBrowser'
 
@@ -40,8 +40,8 @@ function starStyle(delay: number) {
 
 onMounted(async () => {
   showOpenInBrowserHint.value = isInAppBrowser()
-  const frameSrc = resolveFrameSrc(booth.selectedFrameId, booth.customFrameDataUrl)
-  stripBlob = await compositeStrip(booth.photos, frameSrc)
+  const frame = resolveFrame(booth.selectedFrameId, booth.customFrameDataUrl)
+  stripBlob = await compositeStrip(booth.photos, frame)
   stripUrl.value = URL.createObjectURL(stripBlob)
 })
 
@@ -127,7 +127,7 @@ function dismissThanks() {
     </h2>
     <div class="relative max-w-[260px]">
       <div v-if="!stripUrl" class="flex w-full flex-col gap-2 rounded-lg bg-white p-3">
-        <div v-for="n in 4" :key="n" class="aspect-4/3 animate-pulse rounded-md bg-booth-ink/10" />
+        <div v-for="n in booth.shotCount" :key="n" class="aspect-4/3 animate-pulse rounded-md bg-booth-ink/10" />
         <p class="pt-1 font-mono text-xs text-gray-500">piniprint pa... wait lang</p>
       </div>
       <Transition name="reveal" appear>

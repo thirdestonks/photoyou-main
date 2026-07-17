@@ -1,11 +1,12 @@
 export const STRIP_WIDTH = 1200
-export const STRIP_HEIGHT = 3600
 
 const MARGIN = 60
 const GAP = 40
 const FOOTER_HEIGHT = 300
-const WINDOW_WIDTH = STRIP_WIDTH - MARGIN * 2
-const WINDOW_HEIGHT = (STRIP_HEIGHT - MARGIN * 2 - GAP * 3 - FOOTER_HEIGHT) / 4
+
+// Window height is fixed; the strip's total height is what changes with count.
+// Derived from the legacy 4-window layout: (3600 - 120 margins - 120 gaps - 300 footer) / 4.
+export const WINDOW_HEIGHT = 765
 
 export interface FrameWindow {
   x: number
@@ -14,9 +15,15 @@ export interface FrameWindow {
   height: number
 }
 
-export const FRAME_WINDOWS: FrameWindow[] = Array.from({ length: 4 }, (_, i) => ({
-  x: MARGIN,
-  y: MARGIN + i * (WINDOW_HEIGHT + GAP),
-  width: WINDOW_WIDTH,
-  height: WINDOW_HEIGHT
-}))
+export function computeStripHeight(count: number): number {
+  return MARGIN * 2 + FOOTER_HEIGHT + count * WINDOW_HEIGHT + (count - 1) * GAP
+}
+
+export function computeWindows(count: number): FrameWindow[] {
+  return Array.from({ length: count }, (_, i) => ({
+    x: MARGIN,
+    y: MARGIN + i * (WINDOW_HEIGHT + GAP),
+    width: STRIP_WIDTH - MARGIN * 2,
+    height: WINDOW_HEIGHT
+  }))
+}
